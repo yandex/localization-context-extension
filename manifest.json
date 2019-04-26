@@ -1,0 +1,34 @@
+{
+    "manifest_version": 2,
+    "name": "Tanker Context",
+    "version": "1.0",
+    "icons": {
+        "32": "static/32x32.png"
+    },
+    "background": {
+        "scripts": [
+            "background.js"
+        ],
+        "persistent": false
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://localhost.msup.yandex.ru/*"
+            ],
+            "js": [
+                "content-script.js"
+            ]
+        }
+    ],
+    "permissions": [
+        "activeTab",
+        "storage",
+        "unlimitedStorage",
+        "<all_urls>"
+    ],
+    "browser_action": {
+        "default_icon": "static/32x32.png",
+        "default_popup": "popup/popup.html"
+    }
+}
