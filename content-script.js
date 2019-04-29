@@ -14,11 +14,6 @@ const RUN_TIMEOUT = 500;
 
 init();
 
-chrome.store.onChanged.addListener((...args) => {
-    /* eslint-disable no-console */
-    console.log(args);
-})
-
 function init() {
     if (!localStorage.getItem(LS_NAME)) {
         return;
