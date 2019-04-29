@@ -6,34 +6,53 @@
 // режим скриншотинга
 let makingScreenshots = false;
 // обьект ключ:скриншот в формате base64
-const screenshots = {};
+// const screenshots = {};
 
-setInterval(() => {
+const LS_NAME = 'intlMessages';
+const FIRST_RUN_TIMEOUT = 2000;
+const RUN_TIMEOUT = 500;
+
+init();
+
+chrome.store.onChanged.addListener((...args) => {
+    /* eslint-disable no-console */
+    console.log(args);
+})
+
+function init() {
+    if (!localStorage.getItem(LS_NAME)) {
+        return;
+    }
+
+    setTimeout(run, FIRST_RUN_TIMEOUT);
+}
+
+function run() {
     // пока идет скрининг не начинаем делать лишних запусков скрининга
-    if (makingScreenshots) {
-        return;
+    if (!makingScreenshots) {
+        const messages = JSON.parse(localStorage.getItem(LS_NAME));
+        const newMessages = {};
+    
+        chrome.storage.local.get(['screenshots'], ({screenshots}) => {
+            // фильтруем ключи и откидываем те на которые уже есть скрины
+            Object.keys(messages).forEach(key => {
+                if (!screenshots[key]) {
+                    newMessages[key] = messages[key];
+                }
+            });
+
+            // получаем обьект ключ:дом нода
+            const elements = findDomElementsWithIntlData(newMessages);
+
+            if (Object.keys(elements).length >= 1) {
+                makingScreenshots = true;
+                makeScreenshots(elements);
+            }
+        });
     }
 
-    const messages = JSON.parse(localStorage.getItem('intlMessages'));
-    const newMessages = {};
-
-    // фильтруем ключи и откидываем те на которые уже есть скрины
-    Object.keys(messages).forEach(key => {
-        if (!screenshots[key]) {
-            newMessages[key] = messages[key];
-        }
-    });
-
-    // получаем обьект ключ:дом нода
-    const elements = findDomElementsWithIntlData(newMessages);
-
-    if (Object.keys(elements).length < 1) {
-        return;
-    }
-
-    makingScreenshots = true;
-    makeScreenshots(elements);
-}, 500);
+    setTimeout(run, RUN_TIMEOUT);
+}
 
 /**
  * рекурсивная функция которая подсвечивает ноду, делает запрос на скриншот
@@ -52,21 +71,24 @@ function makeScreenshots(elements, index = 0) {
 
     setTimeout(() => {
         chrome.runtime.sendMessage({ type: 'MAKE_SCREENSHOT' }, ({ dataUrl }) => {
-            screenshots[key] = dataUrl;
-            domElement.style.background = background;
-    
-            if (index < keys.length - 1) {
-                makeScreenshots(elements, index + 1);
-            } else {
-                syncStorage(screenshots);
-                makingScreenshots = false;
-            }
+            chrome.storage.local.get(['screenshots'], ({screenshots}) => {
+                screenshots[key] = dataUrl;
+                chrome.storage.local.set({screenshots}, () => {
+                    domElement.style.background = background;
+            
+                    if (index < keys.length - 1) {
+                        makeScreenshots(elements, index + 1);
+                    } else {
+                        makingScreenshots = false;
+                    }
+                });
+            });
         });
     }, 150);
 };
 
 /**
- * 
+ * Синхронизируем стор
  * @param {Object} screenshots 
  */
 function syncStorage(newScreenshots) {

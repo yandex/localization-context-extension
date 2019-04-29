@@ -14,7 +14,7 @@
     "content_scripts": [
         {
             "matches": [
-                "https://localhost.msup.yandex.ru/*"
+                "https://*.yandex.ru/*"
             ],
             "js": [
                 "content-script.js"

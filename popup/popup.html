@@ -3,20 +3,61 @@
 
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="../libs/jszip.js"></script>
     <script src="../libs/file-saver.js"></script>
     <style>
         body {
+            margin: 0;
+            min-width: 250px;
+            max-width: 800px;
             display: flex;
-            flex-direction: column;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        #images {
+            margin-top: 10px;
+            max-height: 400px;
+            overflow: auto;
+            font-size: 14px;
+            line-height: 20px;
+        }
+        .imageItem {
+            text-decoration: underline;
+            cursor: pointer;
+            word-break: break-all;
+            margin-bottom: 10px;
+        }
+        .imageItem:hover {
+            text-decoration: none;
+        }
+        .image {
+            width: 550px;
+        }
+        .info {
+            width: 250px;
+        }
+        .preview {
+            max-width: 550px;
         }
     </style>
 </head>
 
 <body>
-    <div id="amountImages"></div>
-    <button id="download">Выгрузить картинки</button>
-    <button id="clear">Очистить стор</button>
+    <div class="preview" id="preview"></div>
+    <div class="info">
+        <div class="controls">
+            <div id="amountImages"></div>
+            <button id="download">Выгрузить</button>
+            <button id="show">Показать</button>
+            <button id="clear">Очистить</button>
+        </div>
+        <div id="images">
+            
+        </div>
+    </div>
     <script src="popup.js"></script>
 </body>
 
