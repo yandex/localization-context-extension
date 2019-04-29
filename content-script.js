@@ -69,22 +69,20 @@ function makeScreenshots(elements, index = 0) {
 
     domElement.style.background = 'rgba(256, 0, 0, 0.3)';
 
-    setTimeout(() => {
-        chrome.runtime.sendMessage({ type: 'MAKE_SCREENSHOT' }, ({ dataUrl }) => {
-            chrome.storage.local.get(['screenshots'], ({screenshots}) => {
-                screenshots[key] = dataUrl;
-                chrome.storage.local.set({screenshots}, () => {
-                    domElement.style.background = background;
-            
-                    if (index < keys.length - 1) {
-                        makeScreenshots(elements, index + 1);
-                    } else {
-                        makingScreenshots = false;
-                    }
-                });
+    chrome.runtime.sendMessage({ type: 'MAKE_SCREENSHOT' }, ({ dataUrl }) => {
+        chrome.storage.local.get(['screenshots'], ({screenshots}) => {
+            screenshots[key] = dataUrl;
+            chrome.storage.local.set({screenshots}, () => {
+                domElement.style.background = background;
+        
+                if (index < keys.length - 1) {
+                    makeScreenshots(elements, index + 1);
+                } else {
+                    makingScreenshots = false;
+                }
             });
         });
-    }, 150);
+    });
 };
 
 /**
