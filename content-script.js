@@ -5,12 +5,12 @@
 
 // режим скриншотинга
 let makingScreenshots = false;
-// обьект ключ:скриншот в формате base64
-// const screenshots = {};
 
 const LS_NAME = 'intlMessages';
 const FIRST_RUN_TIMEOUT = 2000;
 const RUN_TIMEOUT = 500;
+const SLEEP_TIMEOUT = 50;
+const BACKGROUND_ELEMENT = 'rgba(256, 0, 0, 0.3)';
 
 init();
 
@@ -22,28 +22,28 @@ function init() {
     setTimeout(run, FIRST_RUN_TIMEOUT);
 }
 
-function run() {
+async function run() {
     // пока идет скрининг не начинаем делать лишних запусков скрининга
     if (!makingScreenshots) {
         const messages = JSON.parse(localStorage.getItem(LS_NAME));
         const newMessages = {};
-    
-        chrome.storage.local.get(['screenshots'], ({screenshots}) => {
-            // фильтруем ключи и откидываем те на которые уже есть скрины
-            Object.keys(messages).forEach(key => {
-                if (!screenshots[key]) {
-                    newMessages[key] = messages[key];
-                }
-            });
 
-            // получаем обьект ключ:дом нода
-            const elements = findDomElementsWithIntlData(newMessages);
+        const {screenshots} = await getStorage('screenshots');
 
-            if (Object.keys(elements).length >= 1) {
-                makingScreenshots = true;
-                makeScreenshots(elements);
+        // фильтруем ключи и откидываем те на которые уже есть скрины
+        Object.keys(messages).forEach(key => {
+            if (!screenshots[key]) {
+                newMessages[key] = messages[key];
             }
         });
+
+        // получаем обьект ключ:дом нода
+        const elements = findDomElementsWithIntlData(newMessages);
+
+        if (Object.keys(elements).length >= 1) {
+            makingScreenshots = true;
+            makeScreenshots(elements);
+        }
     }
 
     setTimeout(run, RUN_TIMEOUT);
@@ -56,44 +56,29 @@ function run() {
  * @param {Object} elements 
  * @param {Number} index 
  */
-function makeScreenshots(elements, index = 0) {
+async function makeScreenshots(elements, index = 0) {
     const keys = Object.keys(elements);
     const key = keys[index];
     const domElement = elements[key];
     const background = domElement.style.background;
 
-    domElement.style.background = 'rgba(256, 0, 0, 0.3)';
+    domElement.style.background = BACKGROUND_ELEMENT;
+    await sleep(SLEEP_TIMEOUT);
 
-    chrome.runtime.sendMessage({ type: 'MAKE_SCREENSHOT' }, ({ dataUrl }) => {
-        chrome.storage.local.get(['screenshots'], ({screenshots}) => {
-            screenshots[key] = dataUrl;
-            chrome.storage.local.set({screenshots}, () => {
-                domElement.style.background = background;
-        
-                if (index < keys.length - 1) {
-                    makeScreenshots(elements, index + 1);
-                } else {
-                    makingScreenshots = false;
-                }
-            });
-        });
-    });
+    const {dataUrl} = await sendMessage({ type: 'MAKE_SCREENSHOT' });
+    const {screenshots} = await getStorage('screenshots');
+
+    screenshots[key] = dataUrl;
+    await setStorage({screenshots});
+    domElement.style.background = background;
+    await sleep(SLEEP_TIMEOUT);
+
+    if (index < keys.length - 1) {
+        await makeScreenshots(elements, index + 1);
+    } else {
+        makingScreenshots = false;
+    }
 };
-
-/**
- * Синхронизируем стор
- * @param {Object} screenshots 
- */
-function syncStorage(newScreenshots) {
-    chrome.storage.local.get(['screenshots'], ({screenshots: storageScreenshots}) => {
-        chrome.storage.local.set({
-            screenshots: {
-                ...storageScreenshots,
-                ...newScreenshots
-            }
-        });
-    });
-}
 
 /**
  * метод ищет формирует обьект ключ:дом нода на основе обьекта ключ:значение
@@ -120,7 +105,6 @@ function findDomElementsWithIntlData(messages) {
 
     return elements;
 };
-
 
 /**
  * Адская функция которая пытается ответить на вопрос,
@@ -158,4 +142,36 @@ function checkElementVisibility(element) {
     }
 
     return true;
+}
+
+// промисифицированные функции для хром апи:
+
+function getStorage(name) {
+    return new Promise(resolve => {
+        chrome.storage.local.get([name], result => {
+            resolve(result);
+        });
+    });
+}
+
+function setStorage(data) {
+    return new Promise(resolve => {
+        chrome.storage.local.set(data, () => {
+            resolve();
+        });
+    });
+}
+
+function sleep(time) {
+    return new Promise(resolve => {
+        setTimeout(resolve, time);
+    });
+}
+
+function sendMessage(data) {
+    return new Promise(resolve => {
+        chrome.runtime.sendMessage(data, resultData => {
+            resolve(resultData);
+        });
+    });
 }

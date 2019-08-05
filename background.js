@@ -3,6 +3,8 @@
  */
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type = 'MAKE_SCREENSHOT') {
+        /* eslint-disable no-console */
+        console.log('MAKE');
         chrome.tabs.query(
             { active: true, currentWindow: true },
             function (tabs) {
@@ -13,6 +15,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         );
     }
 
-    // возвращая true мы говорим хрому что callback будет асинхронным
+    // возвращая true мы говорим хрому, что callback будет асинхронным
     return true;
 });
