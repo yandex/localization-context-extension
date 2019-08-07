@@ -3,8 +3,6 @@
  * основная часть работы.
  */
 
-// режим скриншотинга
-let makingScreenshots = false;
 
 const LS_NAME = 'intlMessages';
 const FIRST_RUN_TIMEOUT = 2000;
@@ -22,47 +20,45 @@ function init() {
     setTimeout(run, FIRST_RUN_TIMEOUT);
 }
 
+/**
+ * Функция запускает бесконечный цикл в котором запускается процесс поиска элементов
+ * и их скрининг
+ */
 async function run() {
-    // пока идет скрининг не начинаем делать лишних запусков скрининга
-    if (!makingScreenshots) {
+    while (true) {
         const messages = JSON.parse(localStorage.getItem(LS_NAME));
         const newMessages = {};
-
+    
         const {screenshots} = await getStorage('screenshots');
-
+    
         // фильтруем ключи и откидываем те на которые уже есть скрины
         Object.keys(messages).forEach(key => {
             if (!screenshots[key]) {
                 newMessages[key] = messages[key];
             }
         });
-
+    
         // получаем обьект ключ:дом нода
         const elements = findDomElementsWithIntlData(newMessages);
-
-        if (Object.keys(elements).length >= 1) {
-            makingScreenshots = true;
-            makeScreenshots(elements);
+    
+        for (key in elements) {
+            await makeScreenshot(elements[key]);
         }
-    }
 
-    setTimeout(run, RUN_TIMEOUT);
+        await sleep(RUN_TIMEOUT);
+    }
 }
 
 /**
- * рекурсивная функция которая подсвечивает ноду, делает запрос на скриншот
+ * Рекурсивная функция которая подсвечивает ноду, делает запрос на скриншот
  * убирает подстветку и запускает скрин след. ноды
  * сделано через рекурсию, потому что скриншот делается асинхронно
- * @param {Object} elements 
- * @param {Number} index 
+ * @param {DOMElement} element
  */
-async function makeScreenshots(elements, index = 0) {
-    const keys = Object.keys(elements);
-    const key = keys[index];
-    const domElement = elements[key];
-    const background = domElement.style.background;
+async function makeScreenshot(element) {
+    const background = element.style.background;
 
-    domElement.style.background = BACKGROUND_ELEMENT;
+    element.style.background = BACKGROUND_ELEMENT;
     await sleep(SLEEP_TIMEOUT);
 
     const {dataUrl} = await sendMessage({ type: 'MAKE_SCREENSHOT' });
@@ -70,14 +66,9 @@ async function makeScreenshots(elements, index = 0) {
 
     screenshots[key] = dataUrl;
     await setStorage({screenshots});
-    domElement.style.background = background;
-    await sleep(SLEEP_TIMEOUT);
 
-    if (index < keys.length - 1) {
-        await makeScreenshots(elements, index + 1);
-    } else {
-        makingScreenshots = false;
-    }
+    element.style.background = background;
+    await sleep(SLEEP_TIMEOUT);
 };
 
 /**
@@ -108,7 +99,7 @@ function findDomElementsWithIntlData(messages) {
 
 /**
  * Адская функция которая пытается ответить на вопрос,
- * видит ли пользователь переданный DomElement на странице в данный момент
+ * видит ли пользователь переданный DOMElement на странице в данный момент
  * 
  * @param {DOMElement} element 
  */
@@ -144,7 +135,7 @@ function checkElementVisibility(element) {
     return true;
 }
 
-// промисифицированные функции для хром апи:
+// Промисифицированные функции для хром апи:
 
 function getStorage(name) {
     return new Promise(resolve => {
