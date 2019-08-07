@@ -3,11 +3,14 @@
     "name": "Localization Context",
     "version": "1.0",
     "icons": {
-        "32": "static/32x32.png"
+        "16": "static/icon16.png",
+        "32": "static/icon32.png",
+        "48": "static/icon48.png",
+        "128": "static/icon128.png"
     },
     "background": {
         "scripts": [
-            "backgroundScreen.js"
+            "background-screen.js"
         ],
         "persistent": false
     },
@@ -29,7 +32,7 @@
         "<all_urls>"
     ],
     "browser_action": {
-        "default_icon": "static/32x32.png",
+        "default_icon": "static/icon48.png",
         "default_popup": "popup/popup.html"
     }
 }
