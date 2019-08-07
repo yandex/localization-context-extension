@@ -3,17 +3,28 @@
  * основная часть работы.
  */
 
-
-const LS_NAME = 'intlMessages';
+const DEFAULT_LS_NAME = 'intlMessages';
 const FIRST_RUN_TIMEOUT = 2000;
 const RUN_TIMEOUT = 500;
 const SLEEP_TIMEOUT = 50;
-const BACKGROUND_ELEMENT = 'rgba(256, 0, 0, 0.3)';
+const DEFAULT_BACKGROUND_ELEMENT = 'rgba(256, 0, 0, 0.3)';
+
+let localStorageKey;
+let tempBackground;
 
 init();
 
-function init() {
-    if (!localStorage.getItem(LS_NAME)) {
+async function init() {
+    const data = await getSyncStorage({
+        localStorageKey: DEFAULT_LS_NAME,
+        background: DEFAULT_BACKGROUND_ELEMENT,
+    });
+
+    localStorageKey = data.localStorageKey;
+    tempBackground = data.background;
+
+    if (!localStorage.getItem(localStorageKey)) {
+        console.info(`Key ${localStorageKey} not found.`);
         return;
     }
 
@@ -26,7 +37,7 @@ function init() {
  */
 async function run() {
     while (true) {
-        const messages = JSON.parse(localStorage.getItem(LS_NAME));
+        const messages = JSON.parse(localStorage.getItem(localStorageKey));
         const newMessages = {};
     
         const {screenshots} = await getStorage('screenshots');
@@ -58,7 +69,7 @@ async function run() {
 async function makeScreenshot(element) {
     const background = element.style.background;
 
-    element.style.background = BACKGROUND_ELEMENT;
+    element.style.background = tempBackground;
     await sleep(SLEEP_TIMEOUT);
 
     const {dataUrl} = await sendMessage({ type: 'MAKE_SCREENSHOT' });
@@ -140,6 +151,14 @@ function checkElementVisibility(element) {
 function getStorage(name) {
     return new Promise(resolve => {
         chrome.storage.local.get([name], result => {
+            resolve(result);
+        });
+    });
+}
+
+function getSyncStorage(data) {
+    return new Promise(resolve => {
+        chrome.storage.sync.get(data, result => {
             resolve(result);
         });
     });

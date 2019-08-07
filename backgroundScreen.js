@@ -1,10 +1,8 @@
 /**
- * background скрипт умеет делать скриншоты
+ * backgroundScreen скрипт умеет делать скриншоты
  */
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type = 'MAKE_SCREENSHOT') {
-        /* eslint-disable no-console */
-        console.log('MAKE');
         chrome.tabs.query(
             { active: true, currentWindow: true },
             function (tabs) {

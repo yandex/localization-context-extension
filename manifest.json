@@ -7,7 +7,7 @@
     },
     "background": {
         "scripts": [
-            "background.js"
+            "backgroundScreen.js"
         ],
         "persistent": false
     },
@@ -21,6 +21,7 @@
             ]
         }
     ],
+    "options_page": "options/options.html",
     "permissions": [
         "activeTab",
         "storage",
