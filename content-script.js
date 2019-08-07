@@ -32,8 +32,8 @@ async function init() {
 }
 
 /**
- * Функция запускает бесконечный цикл в котором запускается процесс поиска элементов
- * и их скрининг
+ * Функция запускает бесконечный цикл
+ * в котором запускается процесс поиска элементов и скриниг
  */
 async function run() {
     while (true) {
@@ -61,9 +61,7 @@ async function run() {
 }
 
 /**
- * Рекурсивная функция которая подсвечивает ноду, делает запрос на скриншот
- * убирает подстветку и запускает скрин след. ноды
- * сделано через рекурсию, потому что скриншот делается асинхронно
+ * Функция подсвечивает элемент и скринит его
  * @param {DOMElement} element
  */
 async function makeScreenshot(element) {
@@ -83,8 +81,8 @@ async function makeScreenshot(element) {
 };
 
 /**
- * метод ищет формирует обьект ключ:дом нода на основе обьекта ключ:значение
- * через XPath
+ * Функция формирует обьект Key:DOMElement
+ * на основе обьекта Key:Value через XPath
  * @param {Object} messages 
  */
 function findDomElementsWithIntlData(messages) {
@@ -111,7 +109,6 @@ function findDomElementsWithIntlData(messages) {
 /**
  * Адская функция которая пытается ответить на вопрос,
  * видит ли пользователь переданный DOMElement на странице в данный момент
- * 
  * @param {DOMElement} element 
  */
 function checkElementVisibility(element) {
