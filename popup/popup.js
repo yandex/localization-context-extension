@@ -6,7 +6,9 @@ const imagesContainer = document.getElementById('images');
 const previewContainer = document.getElementById('preview');
 
 updateInfo();
+setInterval(updateInfo, 1000);
 
+// Handler for download all pictures
 downloadButton.onclick = function (element) {
     chrome.storage.local.get(['screenshots'], function ({screenshots}) {
         var zip = new JSZip();
@@ -38,7 +40,7 @@ showButton.onclick = function () {
             valueElement.innerHTML = key;
 
             const deleteButton = document.createElement('button');
-            deleteButton.innerHTML = 'Удалить';
+            deleteButton.innerHTML = 'delete';
 
             imageItem.appendChild(valueElement);
             imageItem.appendChild(deleteButton);
@@ -79,6 +81,6 @@ showButton.onclick = function () {
 function updateInfo () {
     chrome.storage.local.get(['screenshots'], function ({screenshots}) {
         const amount = Object.keys(screenshots).length;
-        amountImagesContainer.innerHTML = `Собрано ${amount} картинок`;
+        amountImagesContainer.innerHTML = `Collected ${amount} pictures`;
     });
 }
