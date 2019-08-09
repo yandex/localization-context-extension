@@ -1,5 +1,5 @@
 /**
- * backgroundScreen скрипт умеет делать скриншоты
+ * background скрипт умеет делать скриншоты
  */
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type = 'MAKE_SCREENSHOT') {

@@ -1,3 +1,7 @@
+import '../css/popup.css';
+import { saveAs } from 'file-saver';
+import * as JSZip from 'jszip';
+
 const downloadButton = document.getElementById('download');
 const clearButton = document.getElementById('clear');
 const showButton = document.getElementById('show');

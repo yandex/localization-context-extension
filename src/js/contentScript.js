@@ -3,6 +3,14 @@
  * основная часть работы.
  */
 
+import {
+    getStorage,
+    getSyncStorage,
+    setStorage,
+    sleep,
+    sendMessage
+} from './utils/promisify';
+
 const DEFAULT_LS_NAME = 'intlMessages';
 const FIRST_RUN_TIMEOUT = 2000;
 const RUN_TIMEOUT = 500;
@@ -40,7 +48,7 @@ async function run() {
         const messages = JSON.parse(localStorage.getItem(localStorageKey));
         const newMessages = {};
     
-        const {screenshots} = await getStorage('screenshots');
+        const {screenshots} = await getStorage(['screenshots']);
     
         // фильтруем ключи и откидываем те на которые уже есть скрины
         Object.keys(messages).forEach(key => {
@@ -52,8 +60,8 @@ async function run() {
         // получаем обьект ключ:дом нода
         const elements = findDomElementsWithIntlData(newMessages);
     
-        for (key in elements) {
-            await makeScreenshot(elements[key]);
+        for (let key in elements) {
+            await makeScreenshot(key, elements[key]);
         }
 
         await sleep(RUN_TIMEOUT);
@@ -62,16 +70,17 @@ async function run() {
 
 /**
  * Функция подсвечивает элемент и скринит его
+ * @param {String} key
  * @param {DOMElement} element
  */
-async function makeScreenshot(element) {
+async function makeScreenshot(key, element) {
     const background = element.style.background;
 
     element.style.background = tempBackground;
     await sleep(SLEEP_TIMEOUT);
 
     const {dataUrl} = await sendMessage({ type: 'MAKE_SCREENSHOT' });
-    const {screenshots} = await getStorage('screenshots');
+    const {screenshots} = await getStorage(['screenshots']);
 
     screenshots[key] = dataUrl;
     await setStorage({screenshots});
@@ -141,44 +150,4 @@ function checkElementVisibility(element) {
     }
 
     return true;
-}
-
-// Промисифицированные функции для хром апи:
-
-function getStorage(name) {
-    return new Promise(resolve => {
-        chrome.storage.local.get([name], result => {
-            resolve(result);
-        });
-    });
-}
-
-function getSyncStorage(data) {
-    return new Promise(resolve => {
-        chrome.storage.sync.get(data, result => {
-            resolve(result);
-        });
-    });
-}
-
-function setStorage(data) {
-    return new Promise(resolve => {
-        chrome.storage.local.set(data, () => {
-            resolve();
-        });
-    });
-}
-
-function sleep(time) {
-    return new Promise(resolve => {
-        setTimeout(resolve, time);
-    });
-}
-
-function sendMessage(data) {
-    return new Promise(resolve => {
-        chrome.runtime.sendMessage(data, resultData => {
-            resolve(resultData);
-        });
-    });
 }

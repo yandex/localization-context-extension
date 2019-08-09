@@ -1,0 +1,43 @@
+body {
+    margin: 0;
+    min-width: 250px;
+    max-width: 800px;
+    display: flex;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#images {
+    margin-top: 10px;
+    max-height: 400px;
+    overflow: auto;
+    font-size: 14px;
+    line-height: 20px;
+    border-top: 1px solid black;
+}
+
+.imageItem {
+    text-decoration: underline;
+    cursor: pointer;
+    word-break: break-all;
+    margin-bottom: 10px;
+}
+
+.imageItem:hover {
+    text-decoration: none;
+}
+
+.image {
+    width: 550px;
+}
+
+.info {
+    width: 250px;
+}
+
+.preview {
+    max-width: 550px;
+}
