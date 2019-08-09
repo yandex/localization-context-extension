@@ -23,6 +23,12 @@ let tempBackground;
 init();
 
 async function init() {
+    const {screenshots} = await getStorage(['screenshots']);
+
+    if (!screenshots) {
+        await setStorage({screenshots: {}});
+    }
+
     const data = await getSyncStorage({
         localStorageKey: DEFAULT_LS_NAME,
         background: DEFAULT_BACKGROUND_ELEMENT,
