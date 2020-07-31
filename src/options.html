@@ -16,6 +16,50 @@
             Temp background for highlight: <br />
             <input id="background" />
         </label>
+        <br />
+        <br />
+        <div>Select 'automatically' option if you want automatically upload screenshots to S3</div>
+        <select id="upload-select">
+            <option value="archive" selected>independently via Download button</option>
+            <option value="s3">automatically via S3</option>
+        </select>
+        <br />
+        <br />
+        <div class="s3-controls">
+            <label>
+                S3 URL:
+                <br />
+                <input id="s3-url" />
+            </label>
+            <br />
+            <br />
+            <label>
+                S3 BUCKET:
+                <br />
+                <input id="s3-bucket" />
+            </label>
+            <br />
+            <br />
+            <label>
+                S3 FOLDER:
+                <br />
+                <input id="s3-folder" />
+            </label>
+            <br />
+            <br />
+            <label>
+                S3 AccessKeyId:
+                <br />
+                <input id="accessKeyId" />
+            </label>
+            <br />
+            <br />
+            <label>
+                S3 AccessSecretKey:
+                <br />
+                <input id="accessSecretKey" />
+            </label>
+        </div>
         <div id="status"></div>
         <button id="save">Save</button>
     </body>

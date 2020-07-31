@@ -4,34 +4,28 @@
  */
 
 import {
-    getStorage,
     getSyncStorage,
-    setStorage,
     sleep,
     sendMessage
 } from './utils/promisify';
 
-const DEFAULT_LS_NAME = 'intlMessages';
-const FIRST_RUN_TIMEOUT = 2000;
-const RUN_TIMEOUT = 500;
-const SLEEP_TIMEOUT = 50;
-const DEFAULT_BACKGROUND_ELEMENT = 'rgba(256, 0, 0, 0.3)';
+import storage from './storage';
+import * as CONSTANTS from './constants';
 
 let localStorageKey;
 let tempBackground;
+let s3accessKeyId = '';
+let s3accessSecretKey = '';
 
 init();
 
 async function init() {
-    const {screenshots} = await getStorage(['screenshots']);
-
-    if (!screenshots) {
-        await setStorage({screenshots: {}});
-    }
-
     const data = await getSyncStorage({
-        localStorageKey: DEFAULT_LS_NAME,
-        background: DEFAULT_BACKGROUND_ELEMENT,
+        localStorageKey: CONSTANTS.DEFAULT_LS_NAME,
+        background: CONSTANTS.DEFAULT_BACKGROUND_ELEMENT,
+        s3accessKeyId,
+        s3accessSecretKey,
+        uploadWaySelectValue: CONSTANTS.DEFAULT_UPLOAD,
     });
 
     localStorageKey = data.localStorageKey;
@@ -42,7 +36,7 @@ async function init() {
         return;
     }
 
-    setTimeout(run, FIRST_RUN_TIMEOUT);
+    setTimeout(run, CONSTANTS.FIRST_RUN_TIMEOUT);
 }
 
 /**
@@ -53,24 +47,23 @@ async function run() {
     while (true) {
         const messages = JSON.parse(localStorage.getItem(localStorageKey));
         const newMessages = {};
-    
-        const {screenshots} = await getStorage(['screenshots']);
-    
+        const screenshots = await storage.getList();
+
         // фильтруем ключи и откидываем те на которые уже есть скрины
         Object.keys(messages).forEach(key => {
             if (!screenshots[key]) {
                 newMessages[key] = messages[key];
             }
         });
-    
+
         // получаем обьект ключ:дом нода
         const elements = findDomElementsWithIntlData(newMessages);
-    
+
         for (let key in elements) {
             await makeScreenshot(key, elements[key]);
         }
 
-        await sleep(RUN_TIMEOUT);
+        await sleep(CONSTANTS.RUN_TIMEOUT);
     }
 }
 
@@ -83,22 +76,20 @@ async function makeScreenshot(key, element) {
     const background = element.style.background;
 
     element.style.background = tempBackground;
-    await sleep(SLEEP_TIMEOUT);
+    await sleep(CONSTANTS.SLEEP_TIMEOUT);
 
     const {dataUrl} = await sendMessage({ type: 'MAKE_SCREENSHOT' });
-    const {screenshots} = await getStorage(['screenshots']);
 
-    screenshots[key] = dataUrl;
-    await setStorage({screenshots});
+    await storage.add(key, dataUrl);
 
     element.style.background = background;
-    await sleep(SLEEP_TIMEOUT);
-};
+    await sleep(CONSTANTS.SLEEP_TIMEOUT);
+}
 
 /**
  * Функция формирует обьект Key:DOMElement
  * на основе обьекта Key:Value через XPath
- * @param {Object} messages 
+ * @param {Object} messages
  */
 function findDomElementsWithIntlData(messages) {
     const elements = {};
@@ -124,7 +115,7 @@ function findDomElementsWithIntlData(messages) {
 /**
  * Адская функция которая пытается ответить на вопрос,
  * видит ли пользователь переданный DOMElement на странице в данный момент
- * @param {DOMElement} element 
+ * @param {DOMElement} element
  */
 function checkElementVisibility(element) {
     const rect = element.getBoundingClientRect();
