@@ -21,6 +21,7 @@
     "write-file-webpack-plugin": "4.5.0"
   },
   "dependencies": {
+    "aws-sdk": "^2.723.0",
     "file-saver": "^2.0.2",
     "jszip": "^3.2.2"
   }

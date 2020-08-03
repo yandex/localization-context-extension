@@ -1,7 +1,7 @@
 import '../css/popup.css';
 import { saveAs } from 'file-saver';
 import * as JSZip from 'jszip';
-import { getStorage, setStorage } from './utils/promisify';
+import storage from './storage';
 
 const downloadButton = document.getElementById('download');
 const clearButton = document.getElementById('clear');
@@ -13,19 +13,14 @@ const previewContainer = document.getElementById('preview');
 init();
 
 async function init() {
-    const {screenshots} = await getStorage(['screenshots']);
-
-    if (!screenshots) {
-        await setStorage({screenshots: {}});
-    }
-
     updateInfo();
     setInterval(updateInfo, 1000);
 }
 
 // Handler for download all pictures
 downloadButton.onclick = async function () {
-    const {screenshots} = await getStorage(['screenshots']);
+    const screenshots = await storage.getList({withDataUrl: true});
+
     const zip = new JSZip();
 
     Object.keys(screenshots).forEach(key => {
@@ -33,17 +28,17 @@ downloadButton.onclick = async function () {
         zip.file(`${key}.jpeg`, value.replace('data:image/jpeg;base64,', ''), {base64: true});
     });
 
-    const content = await zip.generateAsync({ type: "blob" });
+    const content = await zip.generateAsync({type: "blob"});
 
     saveAs(content, "images.zip");
 };
 
-clearButton.onclick = function () {
-    setStorage({ screenshots: {} });
+clearButton.onclick = async function () {
+    await storage.clear();
 };
 
 showButton.onclick = async () => {
-    const {screenshots} = await getStorage(['screenshots']);
+    const screenshots = await storage.getList();
 
     imagesContainer.innerHTML = '';
     Object.keys(screenshots).forEach(key => {
@@ -72,15 +67,16 @@ showButton.onclick = async () => {
 
             imagesContainer.removeChild(imageItem);
 
-            delete screenshots[key];
-            await setStorage({ screenshots });
+            await storage.delete(key);
             updateInfo();
         }
 
-        valueElement.onclick = () => {
+        valueElement.onclick = async () => {
+            const srceenshotSrc = await storage.get(key);
             const image = document.createElement('img');
+
             image.classList.add('image');
-            image.src = screenshots[key];
+            image.src = srceenshotSrc;
 
             const labelElement = document.createElement('div');
             labelElement.innerHTML = key;
@@ -93,7 +89,7 @@ showButton.onclick = async () => {
 };
 
 async function updateInfo () {
-    const {screenshots} = await getStorage(['screenshots']);
+    const screenshots = await storage.getList();
     const amount = Object.keys(screenshots).length;
 
     amountImagesContainer.innerHTML = `Collected ${amount} pictures`;
