@@ -1,7 +1,7 @@
 
 ## Localization Context Extension
 
-Последний билд: [здесь](https://code.s3.yandex.net/localization-context-build/build_03_08_20.zip) 
+Последний билд: [здесь](https://code.s3.yandex.net/localization-context-build/build_04_08_20.zip) 
 
 ### Установка расширения
 

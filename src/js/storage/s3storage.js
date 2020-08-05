@@ -73,7 +73,7 @@ class S3Storage {
 
         const params = {
             Bucket: this.bucket,
-            Key: isOriginalkey ? key : `${this.folder}/${key}`,
+            Key: isOriginalkey ? key : `${this.folder}/${key}.jpeg`,
         };
 
         return new Promise((resolve, reject) => {
@@ -96,7 +96,7 @@ class S3Storage {
 
         const params = {
             Bucket: this.bucket,
-            Key: `${this.folder}/${key}`,
+            Key: `${this.folder}/${key}.jpeg`,
             Body: base64toBlob(dataUrl.replace(/^data:image\/(jpeg);base64,/, ""), 'image/jpeg'),
             ContentType: 'image/jpeg'
         };
@@ -126,7 +126,7 @@ class S3Storage {
         if (list.length === 0) return;
 
         list.forEach((key) => {
-            params.Delete.Objects.push({ Key: `${this.folder}/${key}` });
+            params.Delete.Objects.push({ Key: `${this.folder}/${key}.jpeg` });
         });
 
         return new Promise((resolve, reject) => {
@@ -152,7 +152,7 @@ class S3Storage {
 
         const params = {
             Bucket: this.bucket,
-            Key: `${this.folder}/${key}`,
+            Key: `${this.folder}/${key}.jpeg`,
         };
 
         return new Promise((resolve, reject) => {
